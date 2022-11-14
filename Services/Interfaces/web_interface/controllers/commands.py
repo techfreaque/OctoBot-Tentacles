@@ -39,15 +39,15 @@ def about():
 @login.login_required_when_activated
 def commands(cmd=None):
     if cmd == "restart":
-        models.restart_bot()
+        models.schedule_delayed_command(models.restart_bot)
         return flask.jsonify("Success")
 
     elif cmd == "stop":
-        models.stop_bot()
+        models.schedule_delayed_command(models.stop_bot)
         return flask.jsonify("Success")
 
     elif cmd == "update":
-        models.schedule_delayed_command(models.update_bot())
+        models.schedule_delayed_command(models.update_bot)
         return flask.jsonify("Update started")
 
     else:
