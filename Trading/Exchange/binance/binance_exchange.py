@@ -109,3 +109,39 @@ class Binance(exchanges.SpotCCXTExchange):
         if not order[trading_enums.ExchangeConstantsOrderColumns.FEE.value] and order_id in trades:
             order[trading_enums.ExchangeConstantsOrderColumns.FEE.value] = \
                 trades[order_id][trading_enums.ExchangeConstantsOrderColumns.FEE.value]
+                
+    async def _create_market_stop_loss_order(
+        self, symbol, quantity, price, side, current_price, params=None
+    ) -> dict:
+        order_type = None
+        try:
+            if (
+                trading_enums.TradeOrderType.STOP_LOSS.value.upper()
+                in self.connector.client.markets[symbol][
+                    trading_enums.ExchangeOrderCCXTColumns.INFO.value
+                ]["orderTypes"]
+            ):
+                order_type = trading_enums.TradeOrderType.STOP_LOSS.value
+        except KeyError:
+            # this should never happen as markets should be alreday initialized
+            raise RuntimeError(
+                f"failed to create market stop order, market status is not loaded"
+            )
+        if not order_type:
+            order_type = trading_enums.TradeOrderType.STOP_LOSS_LIMIT.value
+            self.logger.warning(
+                "OctoBot will use a STOP LOSS LIMIT ORDER istead of a market stop loss. "
+                "Make sure you understand the risk of a STOP LOSS LIMIT ORDER in practice, "
+                "as the order might never be filled when the trigger price is reached! - "
+                f"MARKET STOP LOSS ORDERS ARE NOT SUPPORTED WITH {symbol} - "
+            )
+        return await self.connector.client.create_stop_order(
+            symbol,
+            order_type,
+            side,
+            quantity,
+            price,
+            stopPrice=price,
+            params=params,
+        )
+        
