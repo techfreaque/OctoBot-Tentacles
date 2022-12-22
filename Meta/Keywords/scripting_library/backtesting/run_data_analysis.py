@@ -393,8 +393,8 @@ async def _get_historical_pnl(meta_database, plotted_element, include_cumulative
         meta_database,
         transaction_types=(trading_enums.TransactionType.TRADING_FEE.value,
                            trading_enums.TransactionType.FUNDING_FEE.value,
-                           trading_enums.TransactionType.REALISED_PNL.value,
-                           trading_enums.TransactionType.CLOSE_REALISED_PNL.value)
+                           trading_enums.TransactionType.REALIZED_PNL.value,
+                           trading_enums.TransactionType.CLOSE_REALIZED_PNL.value)
     )
     if trading_transactions_history:
         # can rely on pnl history
@@ -545,7 +545,7 @@ async def plot_withdrawals(meta_database, plotted_element):
 async def plot_positions(meta_database, plotted_element):
     realized_pnl_history = await get_transactions(
         meta_database,
-        transaction_types=(trading_enums.TransactionType.CLOSE_REALISED_PNL.value,)
+        transaction_types=(trading_enums.TransactionType.CLOSE_REALIZED_PNL.value,)
     )
     key_to_label = {
         "x": "Exit time",
@@ -699,8 +699,8 @@ async def plot_historical_wins_and_losses(meta_database, plotted_element, exchan
         meta_database,
         transaction_types=(trading_enums.TransactionType.TRADING_FEE.value,
                            trading_enums.TransactionType.FUNDING_FEE.value,
-                           trading_enums.TransactionType.REALISED_PNL.value,
-                           trading_enums.TransactionType.CLOSE_REALISED_PNL.value)
+                           trading_enums.TransactionType.REALIZED_PNL.value,
+                           trading_enums.TransactionType.CLOSE_REALIZED_PNL.value)
     )
     if trading_transactions_history:
         # can rely on pnl history
@@ -757,8 +757,8 @@ async def plot_historical_win_rates(meta_database, plotted_element, exchange=Non
         meta_database,
         transaction_types=(trading_enums.TransactionType.TRADING_FEE.value,
                            trading_enums.TransactionType.FUNDING_FEE.value,
-                           trading_enums.TransactionType.REALISED_PNL.value,
-                           trading_enums.TransactionType.CLOSE_REALISED_PNL.value)
+                           trading_enums.TransactionType.REALIZED_PNL.value,
+                           trading_enums.TransactionType.CLOSE_REALIZED_PNL.value)
     )
     if trading_transactions_history:
         # can rely on pnl history
@@ -804,8 +804,8 @@ async def plot_best_case_growth(meta_database, plotted_element, exchange=None,
         meta_database,
         transaction_types=(trading_enums.TransactionType.TRADING_FEE.value,
                            trading_enums.TransactionType.FUNDING_FEE.value,
-                           trading_enums.TransactionType.REALISED_PNL.value,
-                           trading_enums.TransactionType.CLOSE_REALISED_PNL.value)
+                           trading_enums.TransactionType.REALIZED_PNL.value,
+                           trading_enums.TransactionType.CLOSE_REALIZED_PNL.value)
     )
     if trading_transactions_history:
         # can rely on pnl history
