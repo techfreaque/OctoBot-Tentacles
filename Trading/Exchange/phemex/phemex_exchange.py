@@ -13,12 +13,25 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-import asyncio
-
 import octobot_trading.exchanges as exchanges
+import octobot_trading.exchanges.connectors.ccxt.exchange_settings_ccxt \
+    as exchange_settings_ccxt
+
+
+class PhemexConnectorSettings(
+    exchange_settings_ccxt.CCXTExchangeConfig):
+    @classmethod
+    def set_connector_settings(cls, exchange_connector):
+        cls.MARKET_STATUS_PARSER.FIX_PRECISION = True
+        cls.GET_ORDER_METHODS = [
+            exchange_connector.get_order_default.__name__,
+            exchange_connector.get_order_from_open_and_closed_orders.__name__,
+            exchange_connector.get_trade.__name__,
+        ]
 
 
 class Phemex(exchanges.SpotCCXTExchange):
+    CONNECTOR_CONFIG_CLASS = PhemexConnectorSettings
     DESCRIPTION = ""
 
     @classmethod
@@ -28,24 +41,3 @@ class Phemex(exchanges.SpotCCXTExchange):
     @classmethod
     def is_supporting_exchange(cls, exchange_candidate_name) -> bool:
         return cls.get_name() == exchange_candidate_name
-
-    async def get_order(self, order_id: str, symbol: str = None, **kwargs: dict) -> dict:
-        if order := await self.connector.get_order(symbol=symbol, order_id=order_id, **kwargs):
-            return order
-        # try from closed orders (get_order is not returning filled or cancelled orders)
-        if order := await self.get_order_from_open_and_closed_orders(order_id, symbol):
-            return order
-        # try from trades (get_order is not returning filled or cancelled orders)
-        return await self._get_order_from_trades(symbol, order_id, {})
-
-    async def _get_order_from_trades(self, symbol, order_id, order_to_update):
-        # usually the last trade is the right one
-        for _ in range(3):
-            if (order := await self.get_order_from_trades(symbol, order_id, order_to_update)) is None:
-                await asyncio.sleep(3)
-            else:
-                return order
-        raise KeyError("Order id not found in trades. Impossible to build order from trades history")
-
-    def get_market_status(self, symbol, price_example=None, with_fixer=True):
-        return self.get_fixed_market_status(symbol, price_example=price_example, with_fixer=with_fixer)

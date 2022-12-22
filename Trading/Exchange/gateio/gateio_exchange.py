@@ -15,32 +15,27 @@
 #  License along with this library.
 
 import octobot_trading.exchanges as exchanges
-import octobot_trading.enums as trading_enums
+import octobot_trading.exchanges.connectors.ccxt.exchange_settings_ccxt \
+    as exchange_settings_ccxt
+
+
+class GateIOConnectorSettings(
+    exchange_settings_ccxt.CCXTExchangeConfig):
+    @classmethod
+    def set_connector_settings(cls, exchange_connector):
+        cls.MARKET_STATUS_PARSER.FIX_PRECISION = True
+        cls.MAX_RECENT_TRADES_PAGINATION_LIMIT = 100
+        cls.MAX_ORDERS_PAGINATION_LIMIT = 100
+        cls.MARKET_STATUS_PARSER.REMOVE_INVALID_PRICE_LIMITS = True
 
 
 class GateIO(exchanges.SpotCCXTExchange):
-    ORDERS_LIMIT = 100
+    CONNECTOR_CONFIG_CLASS = GateIOConnectorSettings
 
     @classmethod
     def get_name(cls):
-        return 'gateio'
+        return "gateio"
 
     @classmethod
     def is_supporting_exchange(cls, exchange_candidate_name) -> bool:
         return exchange_candidate_name == cls.get_name()
-
-    async def get_open_orders(self, symbol=None, since=None, limit=None, **kwargs) -> list:
-        return await super().get_open_orders(symbol=symbol,
-                                             since=since,
-                                             limit=min(self.ORDERS_LIMIT, limit) 
-                                                   if limit is not None else None,
-                                             **kwargs)
-
-    def get_market_status(self, symbol, price_example=None, with_fixer=True):
-        return self.get_fixed_market_status(symbol, price_example=price_example, with_fixer=with_fixer,
-                                            remove_price_limits=True)
-
-    async def get_price_ticker(self, symbol: str, **kwargs: dict):
-        ticker = await super().get_price_ticker(symbol=symbol, **kwargs)
-        ticker[trading_enums.ExchangeConstantsTickersColumns.TIMESTAMP.value] = self.connector.client.milliseconds()
-        return ticker

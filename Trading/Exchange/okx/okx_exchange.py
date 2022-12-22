@@ -16,10 +16,21 @@
 
 import octobot_trading.enums as trading_enums
 import octobot_trading.exchanges as exchanges
+import octobot_trading.exchanges.connectors.ccxt.exchange_settings_ccxt \
+    as exchange_settings_ccxt
+
+
+class OkxConnectorSettings(exchange_settings_ccxt.CCXTExchangeConfig):
+    @classmethod
+    def set_connector_settings(cls, exchange_connector):
+        cls.MARKET_STATUS_PARSER.FIX_PRECISION = True
+        # value from https://www.okex.com/docs/en/#spot-orders_pending
+        cls.MAX_RECENT_TRADES_PAGINATION_LIMIT: int = 100
+        cls.MAX_ORDERS_PAGINATION_LIMIT: int = 100
 
 
 class Okx(exchanges.SpotCCXTExchange):
-    MAX_PAGINATION_LIMIT: int = 100  # value from https://www.okex.com/docs/en/#spot-orders_pending
+    CONNECTOR_CONFIG_CLASS = OkxConnectorSettings
     DESCRIPTION = ""
 
     # FROM https://www.okex.com/docs-v5/en/#overview-demo-trading-services
@@ -43,18 +54,6 @@ class Okx(exchanges.SpotCCXTExchange):
     def is_supporting_sandbox(cls) -> bool:
         return False
 
-    async def get_open_orders(self, symbol=None, since=None, limit=None, **kwargs) -> list:
-        return await super().get_open_orders(symbol=symbol,
-                                             since=since,
-                                             limit=self._fix_limit(limit),
-                                             **kwargs)
-
-    async def get_closed_orders(self, symbol=None, since=None, limit=None, **kwargs) -> list:
-        return await super().get_closed_orders(symbol=symbol,
-                                               since=since,
-                                               limit=self._fix_limit(limit),
-                                               **kwargs)
-
     async def _create_market_buy_order(self, symbol, quantity, price=None, params=None) -> dict:
         """
         Add price to default connector call for market orders https://github.com/ccxt/ccxt/issues/9523
@@ -68,12 +67,6 @@ class Okx(exchanges.SpotCCXTExchange):
         """
         return await self.connector.client.create_market_order(symbol=symbol, side='sell', amount=quantity,
                                                                price=price, params=params)
-
-    def _fix_limit(self, limit: int) -> int:
-        return min(self.MAX_PAGINATION_LIMIT, limit) if limit else limit
-
-    def get_market_status(self, symbol, price_example=None, with_fixer=True):
-        return self.get_fixed_market_status(symbol, price_example=price_example, with_fixer=with_fixer)
 
     async def get_sub_account_list(self):
         sub_account_list = (await self.connector.client.privateGetUsersSubaccountList()).get("data", [])

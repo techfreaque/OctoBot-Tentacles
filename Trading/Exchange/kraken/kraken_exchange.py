@@ -15,12 +15,23 @@
 #  License along with this library.
 import octobot_trading.exchanges as exchanges
 import octobot_trading.errors
+import octobot_trading.exchanges.connectors.ccxt.exchange_settings_ccxt \
+    as exchange_settings_ccxt
 
+
+class KrakenConnectorSettings(
+    exchange_settings_ccxt.CCXTExchangeConfig):
+    @classmethod
+    def set_connector_settings(cls, exchange_connector):
+        cls.MARKET_STATUS_PARSER.FIX_PRECISION = True
+        cls.MAX_RECENT_TRADES_PAGINATION_LIMIT = 1000
+        cls.MAX_ORDER_PAGINATION_LIMIT = 1000
+    
 
 class Kraken(exchanges.SpotCCXTExchange):
+    CONNECTOR_CONFIG_CLASS = KrakenConnectorSettings
     DESCRIPTION = ""
 
-    RECENT_TRADE_FIXED_LIMIT = 1000
 
     def __init__(self, config, exchange_manager):
         super().__init__(config, exchange_manager)
@@ -34,15 +45,6 @@ class Kraken(exchanges.SpotCCXTExchange):
     @classmethod
     def is_supporting_exchange(cls, exchange_candidate_name) -> bool:
         return cls.get_name() == exchange_candidate_name
-
-    def get_market_status(self, symbol, price_example=None, with_fixer=True):
-        return self.get_fixed_market_status(symbol, price_example=price_example, with_fixer=with_fixer)
-
-    async def get_recent_trades(self, symbol, limit=RECENT_TRADE_FIXED_LIMIT, **kwargs):
-        if limit is not None and limit != self.RECENT_TRADE_FIXED_LIMIT:
-            self.logger.debug(f"Trying to get_recent_trades with limit != {self.RECENT_TRADE_FIXED_LIMIT} : ({limit})")
-            limit = self.RECENT_TRADE_FIXED_LIMIT
-        return await super().get_recent_trades(symbol=symbol, limit=limit, **kwargs)
 
     async def get_order_book(self, symbol, limit=5, **kwargs):
         # suggestion from https://github.com/ccxt/ccxt/issues/8135#issuecomment-748520283

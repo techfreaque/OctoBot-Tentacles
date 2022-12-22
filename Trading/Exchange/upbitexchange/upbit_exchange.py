@@ -14,9 +14,19 @@
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
 import octobot_trading.exchanges as exchanges
+import octobot_trading.exchanges.connectors.ccxt.exchange_settings_ccxt \
+    as exchange_settings_ccxt
+
+
+class UpbitConnectorSettings(
+    exchange_settings_ccxt.CCXTExchangeConfig):
+    @classmethod
+    def set_connector_settings(cls, exchange_connector):
+        cls.MARKET_STATUS_PARSER.FIX_PRECISION = True
 
 
 class UpbitExchange(exchanges.SpotCCXTExchange):
+    CONNECTOR_CONFIG_CLASS = UpbitConnectorSettings
     DESCRIPTION = ""
 
     @classmethod
@@ -26,6 +36,3 @@ class UpbitExchange(exchanges.SpotCCXTExchange):
     @classmethod
     def is_supporting_exchange(cls, exchange_candidate_name) -> bool:
         return cls.get_name() == exchange_candidate_name
-
-    def get_market_status(self, symbol, price_example=None, with_fixer=True):
-        return self.get_fixed_market_status(symbol, price_example=price_example, with_fixer=with_fixer)

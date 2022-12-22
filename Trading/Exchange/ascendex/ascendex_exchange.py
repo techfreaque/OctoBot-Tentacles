@@ -13,15 +13,25 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-import typing
-import decimal
-
-import octobot_commons.enums
 import octobot_trading.enums as trading_enums
 import octobot_trading.exchanges as exchanges
+import octobot_trading.exchanges.connectors.ccxt.exchange_settings_ccxt as exchange_settings_ccxt
+
+
+class AscendExConnectorSettings(exchange_settings_ccxt.CCXTExchangeConfig):
+    @classmethod
+    def set_connector_settings(cls, exchange_connector):
+        cls.GET_MY_RECENT_TRADES_METHODS = [
+            exchange_connector.get_my_recent_trades_using_closed_orders.__name__,
+        ]
+        cls.MARKET_STATUS_PARSER.FIX_PRECISION = True
+        cls.CANDLE_LOADING_LIMIT = 500
+        
 
 
 class AscendEx(exchanges.SpotCCXTExchange):
+    CONNECTOR_CONFIG_CLASS = AscendExConnectorSettings
+
     DESCRIPTION = ""
 
     BUY_STR = "Buy"
@@ -44,29 +54,3 @@ class AscendEx(exchanges.SpotCCXTExchange):
     async def switch_to_account(self, account_type):
         # TODO
         pass
-
-    def parse_account(self, account):
-        return trading_enums.AccountTypes[account.lower()]
-
-    def get_market_status(self, symbol, price_example=None, with_fixer=True):
-        return self.get_fixed_market_status(symbol, price_example=price_example, with_fixer=with_fixer)
-
-    async def get_price_ticker(self, symbol: str, **kwargs: dict):
-        ticker = await super().get_price_ticker(symbol=symbol, **kwargs)
-        ticker[trading_enums.ExchangeConstantsTickersColumns.TIMESTAMP.value] = self.connector.client.milliseconds()
-        return ticker
-
-    async def get_my_recent_trades(self, symbol=None, since=None, limit=None, **kwargs):
-        # On AscendEx, account recent trades is available under fetch_closed_orders
-        return await super().get_closed_orders(symbol=symbol, since=since, limit=limit, **kwargs)
-
-    async def get_symbol_prices(self,
-                                symbol: str,
-                                time_frame: octobot_commons.enums.TimeFrames,
-                                limit: int = None,
-                                **kwargs: dict) -> typing.Optional[list]:
-        if limit is None:
-            # force default limit on AscendEx since it's not used by default in fetch_ohlcv
-            options = self.connector.client.safe_value(self.connector.client.options, 'fetchOHLCV', {})
-            limit = self.connector.client.safe_integer(options, 'limit', 500)
-        return await super().get_symbol_prices(symbol, time_frame, limit, **kwargs)

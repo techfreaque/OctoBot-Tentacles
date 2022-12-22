@@ -13,16 +13,3 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
-import octobot_trading.exchanges as exchanges
-
-
-class WavesExchange(exchanges.SpotCCXTExchange):
-    DESCRIPTION = ""
-
-    @classmethod
-    def get_name(cls):
-        return 'wavesexchange'
-
-    @classmethod
-    def is_supporting_exchange(cls, exchange_candidate_name) -> bool:
-        return cls.get_name() == exchange_candidate_name
