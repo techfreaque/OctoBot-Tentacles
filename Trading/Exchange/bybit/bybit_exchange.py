@@ -158,12 +158,6 @@ class Bybit(exchanges.SpotCCXTExchange, exchanges.FutureCCXTExchange):
     async def cancel_order(self, order_id: str, symbol: str = None, **kwargs: dict) -> trading_enums.OrderStatus:
         return await super().cancel_order(order_id, symbol=symbol, **kwargs)
 
-    async def set_symbol_leverage(self, symbol: str, leverage: int, **kwargs: dict):
-        # buy_leverage and sell_leverage are required on Bybit
-        kwargs["buy_leverage"] = kwargs.get("buy_leverage", float(leverage))
-        kwargs["sell_leverage"] = kwargs.get("sell_leverage", float(leverage))
-        return await self.connector.set_symbol_leverage(leverage=leverage, symbol=symbol, **kwargs)
-
     async def set_symbol_partial_take_profit_stop_loss(self, symbol: str, inverse: bool,
                                                        tp_sl_mode: trading_enums.TakeProfitStopLossMode):
         # /contract/v3/private/position/switch-tpsl-mode
