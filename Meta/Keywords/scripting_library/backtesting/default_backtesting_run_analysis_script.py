@@ -176,7 +176,7 @@ async def get_backtesting_report_template(run_data, backtesting_analysis_setting
                                                           metadata[commons_enums.BacktestingMetadata.TIMESTAMP.value]))
                                    )
 
-    if backtesting_analysis_settings.get("display_backtest_details_strategy_settings", True):
+    if analysis_settings.get("display_backtest_details_strategy_settings", True):
         performance_summary \
             += get_section_display("Strategy Settings",
                                    get_user_inputs_display(metadata)
