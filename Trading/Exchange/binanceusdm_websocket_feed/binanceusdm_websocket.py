@@ -15,17 +15,21 @@
 #  License along with this library.
 import octobot_trading.exchanges as exchanges
 from octobot_trading.enums import WebsocketFeeds as Feeds
-import tentacles.Trading.Exchange.cryptocom.cryptocom_exchange as cryptocom_exchange
+import tentacles.Trading.Exchange.binanceusdm.binanceusdm_exchange as binanceusdm_exchange
 
 
-class CryptoComCCXTWebsocketConnector(exchanges.CCXTWebsocketConnector):
+class BinanceUsdMCCXTWebsocketConnector(exchanges.CCXTWebsocketConnector):
     EXCHANGE_FEEDS = {
-        Feeds.TRADES: True,
-        Feeds.KLINE: True,
-        Feeds.TICKER: True,
-        Feeds.CANDLE: True,
+        Feeds.TRADES: False,
+        Feeds.KLINE: False,
+        # needs to fetch funding rate as well to get funding and mark price
+        Feeds.TICKER: False,
+        Feeds.CANDLE: False,
     }
 
     @classmethod
     def get_name(cls):
-        return cryptocom_exchange.CryptoCom.get_name()
+        return binanceusdm_exchange.BinanceUsdM.get_name()
+
+    def get_adapter_class(self, adapter_class):
+        return binanceusdm_exchange.BinanceUsdMAdapter
