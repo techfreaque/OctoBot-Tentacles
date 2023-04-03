@@ -31,7 +31,6 @@ from tentacles.Services.Interfaces.web_interface.models import web_interface_tab
 
 
 from tentacles.Services.Interfaces.web_interface.models.backtesting import (
-    CURRENT_BOT_DATA,
     get_full_candle_history_exchange_list,
     get_other_history_exchange_list,
     get_data_files_with_description,
@@ -428,14 +427,13 @@ __all__ = [
     "get_portfolio_historical_values",
     "get_pnl_history_symbols",
     "get_pnl_history",
-    "get_all_orders_data",
-    "get_all_trades_data",
-    "get_all_positions_data",
-    "clear_exchanges_orders_history",
-    "clear_exchanges_trades_history",
-    "clear_exchanges_transactions_history",
     "clear_exchanges_portfolio_history",
-    "CURRENT_BOT_DATA",
+    "clear_exchanges_transactions_history",
+    "clear_exchanges_trades_history",
+    "clear_exchanges_orders_history",
+    "get_all_positions_data",
+    "get_all_trades_data",
+    "get_all_orders_data",
     "get_full_candle_history_exchange_list",
     "get_other_history_exchange_list",
     "change_reference_market_on_config_currencies",
