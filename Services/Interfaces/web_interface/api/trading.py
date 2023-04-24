@@ -17,15 +17,32 @@ import json
 import flask
 
 import octobot_services.interfaces.util as interfaces_util
+from tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 import import_cross_origin_if_enabled
 import tentacles.Services.Interfaces.web_interface.api as api
 import tentacles.Services.Interfaces.web_interface.util as util
 import tentacles.Services.Interfaces.web_interface.login as login
 import tentacles.Services.Interfaces.web_interface.models as models
 
 
-@api.api.route("/orders", methods=['GET', 'POST'])
-@login.login_required_when_activated
-def orders():
+route = "/orders"
+methods = ["GET", "POST"]
+if cross_origin := import_cross_origin_if_enabled():
+
+    @api.api.route(route, methods=methods)
+    @cross_origin(origins="*")
+    @login.login_required_when_activated
+    def orders():
+        return _orders()
+
+else:
+
+    @api.api.route(route, methods=methods)
+    @login.login_required_when_activated
+    def orders():
+        return _orders()
+
+
+def _orders():
     if flask.request.method == 'GET':
         return flask.jsonify(models.get_all_orders_data())
     elif flask.request.method == "POST":
@@ -43,15 +60,47 @@ def orders():
         return flask.jsonify(result)
 
 
-@api.api.route("/trades", methods=['GET'])
-@login.login_required_when_activated
-def trades():
+route = "/trades"
+methods = ["GET"]
+if cross_origin := import_cross_origin_if_enabled():
+
+    @api.api.route(route, methods=methods)
+    @cross_origin(origins="*")
+    @login.login_required_when_activated
+    def trades():
+        return _trades()
+
+else:
+
+    @api.api.route(route, methods=methods)
+    @login.login_required_when_activated
+    def trades():
+        return _trades()
+
+
+def _trades():
     return flask.jsonify(models.get_all_trades_data())
 
 
-@api.api.route("/positions", methods=['GET', 'POST'])
-@login.login_required_when_activated
-def positions():
+route = "/positions"
+methods = ['GET', 'POST']
+if cross_origin := import_cross_origin_if_enabled():
+
+    @api.api.route(route, methods=methods)
+    @cross_origin(origins="*")
+    @login.login_required_when_activated
+    def positions():
+        return _positions()
+
+else:
+
+    @api.api.route(route, methods=methods)
+    @login.login_required_when_activated
+    def positions():
+        return _positions()
+
+
+def _positions():
     if flask.request.method == 'GET':
         return flask.jsonify(models.get_all_positions_data())
     elif flask.request.method == "POST":
@@ -76,9 +125,24 @@ def refresh_portfolio():
         return util.get_rest_reply("No portfolio to refresh", 500)
 
 
-@api.api.route("/currency_list", methods=['GET'])
-@login.login_required_when_activated
-def currency_list():
+route = "/currency_list"
+if cross_origin := import_cross_origin_if_enabled():
+
+    @api.api.route(route)
+    @cross_origin(origins="*")
+    @login.login_required_when_activated
+    def currency_list():
+        return _currency_list()
+
+else:
+
+    @api.api.route(route)
+    @login.login_required_when_activated
+    def currency_list():
+        return _currency_list()
+
+
+def _currency_list():
     return flask.jsonify(models.get_all_symbols_list())
 
 
@@ -117,25 +181,85 @@ def pnl_history():
     )
 
 
-@api.api.route("/clear_orders_history", methods=['POST'])
-@login.login_required_when_activated
-def clear_orders_history():
+route = "/clear_orders_history"
+methods = ['POST']
+if cross_origin := import_cross_origin_if_enabled():
+
+    @api.api.route(route, methods=methods)
+    @cross_origin(origins="*")
+    @login.login_required_when_activated
+    def clear_orders_history():
+        return _clear_orders_history()
+
+else:
+
+    @api.api.route(route, methods=methods)
+    @login.login_required_when_activated
+    def clear_orders_history():
+        return _clear_orders_history()
+
+def _clear_orders_history():
     return util.get_rest_reply(models.clear_exchanges_orders_history())
 
 
-@api.api.route("/clear_trades_history", methods=['POST'])
-@login.login_required_when_activated
-def clear_trades_history():
+route = "/clear_trades_history"
+methods = ['POST']
+if cross_origin := import_cross_origin_if_enabled():
+
+    @api.api.route(route, methods=methods)
+    @cross_origin(origins="*")
+    @login.login_required_when_activated
+    def clear_trades_history():
+        return _clear_trades_history()
+
+else:
+
+    @api.api.route(route, methods=methods)
+    @login.login_required_when_activated
+    def clear_trades_history():
+        return _clear_trades_history()
+
+def _clear_trades_history():
     return util.get_rest_reply(models.clear_exchanges_trades_history())
 
 
-@api.api.route("/clear_portfolio_history", methods=['POST'])
-@login.login_required_when_activated
-def clear_portfolio_history():
+route = "/clear_portfolio_history"
+methods = ['POST']
+if cross_origin := import_cross_origin_if_enabled():
+
+    @api.api.route(route, methods=methods)
+    @cross_origin(origins="*")
+    @login.login_required_when_activated
+    def clear_portfolio_history():
+        return _clear_portfolio_history()
+
+else:
+
+    @api.api.route(route, methods=methods)
+    @login.login_required_when_activated
+    def clear_portfolio_history():
+        return _clear_portfolio_history()
+
+def _clear_portfolio_history():
     return flask.jsonify(models.clear_exchanges_portfolio_history())
 
 
-@api.api.route("/clear_transactions_history", methods=['POST'])
-@login.login_required_when_activated
-def clear_transactions_history():
+route = "/clear_transactions_history"
+methods = ['POST']
+if cross_origin := import_cross_origin_if_enabled():
+
+    @api.api.route(route, methods=methods)
+    @cross_origin(origins="*")
+    @login.login_required_when_activated
+    def clear_transactions_history():
+        return _clear_transactions_history()
+
+else:
+
+    @api.api.route(route, methods=methods)
+    @login.login_required_when_activated
+    def clear_transactions_history():
+        return _clear_transactions_history()
+
+def _clear_transactions_history():
     return flask.jsonify(models.clear_exchanges_transactions_history())

@@ -17,15 +17,29 @@
 import flask
 
 import tentacles.Services.Interfaces.web_interface.advanced_controllers as advanced_controllers
+import tentacles.Services.Interfaces.web_interface.flask_util.cors as cors_util
 import tentacles.Services.Interfaces.web_interface.util as util
 import tentacles.Services.Interfaces.web_interface.models as models
 import tentacles.Services.Interfaces.web_interface.login as login
+import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2_models
 
 
-@advanced_controllers.advanced.route("/strategy-optimizer")
-@advanced_controllers.advanced.route('/strategy-optimizer', methods=['GET', 'POST'])
-@login.login_required_when_activated
-def strategy_optimizer():
+route = "/strategy-optimizer"
+methods = ['GET', 'POST']
+if cross_origin := octo_ui2_models.import_cross_origin_if_enabled():
+    @advanced_controllers.advanced.route(route, methods=methods)
+    @cross_origin(origins=cors_util.get_user_defined_cors_allowed_origins())
+    @login.login_required_when_activated
+    def strategy_optimizer():
+        return _strategy_optimizer()
+else:
+    @advanced_controllers.advanced.route(route, methods=methods)
+    @login.login_required_when_activated
+    def strategy_optimizer():
+        return _strategy_optimizer()
+
+
+def _strategy_optimizer():
     if not models.is_backtesting_enabled():
         return flask.redirect(flask.url_for("home"))
     if flask.request.method == 'POST':

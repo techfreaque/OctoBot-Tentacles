@@ -18,6 +18,9 @@ import flask
 import octobot_commons.logging as bot_logging
 import octobot.constants as constants
 import octobot.disclaimer as disclaimer
+from tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 import (
+    import_cross_origin_if_enabled,
+)
 import tentacles.Services.Interfaces.web_interface as web_interface
 import tentacles.Services.Interfaces.web_interface.login as login
 import tentacles.Services.Interfaces.web_interface.models as models
@@ -35,9 +38,25 @@ def about():
                                  disclaimer=disclaimer.DISCLAIMER)
 
 
-@web_interface.server_instance.route('/commands/<cmd>', methods=['GET', 'POST'])
-@login.login_required_when_activated
-def commands(cmd=None):
+route = "/commands/<cmd>"
+methods = ["POST", "GET"]
+if cross_origin := import_cross_origin_if_enabled():
+
+    @web_interface.server_instance.route(route, methods=methods)
+    @cross_origin(origins="*")
+    @login.login_required_when_activated
+    def commands(cmd=None):
+        return _commands(cmd)
+
+else:
+
+    @web_interface.server_instance.route(route, methods=methods)
+    @login.login_required_when_activated
+    def commands(cmd=None):
+        return _commands(cmd)
+
+
+def _commands(cmd=None):
     if cmd == "restart":
         models.schedule_delayed_command(models.restart_bot, delay=0.1)
         return flask.jsonify("Success")

@@ -15,6 +15,7 @@
 #  License along with this library.
 import flask
 import os
+from tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 import import_cross_origin_if_enabled
 
 import tentacles.Services.Interfaces.web_interface as web_interface
 import tentacles.Services.Interfaces.web_interface.login as login
@@ -44,10 +45,24 @@ def profile_media(path):
         # reference point is the web interface directory: use OctoBot root folder as a reference
         return _send_file("../../../..", path)
 
+route = "/exchange_logo/<name>"
+if cross_origin := import_cross_origin_if_enabled():
 
-@web_interface.server_instance.route('/exchange_logo/<name>')
-@login.login_required_when_activated
-def exchange_logo(name):
+    @web_interface.server_instance.route(route)
+    @cross_origin(origins="*")
+    @login.login_required_when_activated
+    def exchange_logo(name):
+        return _exchange_logo(name)
+
+else:
+
+    @web_interface.server_instance.route(route)
+    @login.login_required_when_activated
+    def exchange_logo(name):
+        return _exchange_logo(name)
+
+
+def _exchange_logo(name):
     return flask.jsonify(models.get_exchange_logo(name))
 
 
@@ -59,8 +74,24 @@ def audio_media(name):
         return _send_file("static/audio", name)
 
 
-@web_interface.server_instance.route('/currency_logos', methods=['POST'])
-@login.login_required_when_activated
-def cryptocurrency_logos():
+route = "/currency_logos"
+methods = ["POST"]
+if cross_origin := import_cross_origin_if_enabled():
+
+    @web_interface.server_instance.route(route, methods=methods)
+    @cross_origin(origins="*")
+    @login.login_required_when_activated
+    def cryptocurrency_logos():
+        return _cryptocurrency_logos()
+
+else:
+
+    @web_interface.server_instance.route(route, methods=methods)
+    @login.login_required_when_activated
+    def cryptocurrency_logos():
+        return _cryptocurrency_logos()
+
+
+def _cryptocurrency_logos():
     request_data = flask.request.get_json()
     return flask.jsonify(models.get_currency_logo_urls(request_data["currency_ids"]))

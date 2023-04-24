@@ -17,6 +17,9 @@ import flask
 import werkzeug
 import os
 from datetime import datetime
+from tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 import (
+    import_cross_origin_if_enabled,
+)
 
 import octobot_commons.constants as commons_constants
 import octobot_commons.logging as commons_logging
@@ -98,9 +101,25 @@ def profile():
     )
 
 
-@web_interface.server_instance.route('/profiles_management/<action>', methods=["POST", "GET"])
-@login.login_required_when_activated
-def profiles_management(action):
+route = "/profiles_management/<action>"
+methods = ["POST", "GET"]
+if cross_origin := import_cross_origin_if_enabled():
+
+    @web_interface.server_instance.route(route, methods=methods)
+    @cross_origin(origins="*")
+    @login.login_required_when_activated
+    def profiles_management(action):
+        return _profiles_management(action)
+
+else:
+
+    @web_interface.server_instance.route(route, methods=methods)
+    @login.login_required_when_activated
+    def profiles_management(action):
+        return _profiles_management(action)
+
+
+def _profiles_management(action):
     if action == "update":
         data = flask.request.get_json()
         success, err = models.update_profile(flask.request.get_json()["id"], data)
@@ -181,9 +200,25 @@ def accounts():
                                  )
 
 
-@web_interface.server_instance.route('/config', methods=['POST'])
-@login.login_required_when_activated
-def config():
+route = "/config"
+methods = ["POST"]
+if cross_origin := import_cross_origin_if_enabled():
+
+    @web_interface.server_instance.route(route, methods=methods)
+    @cross_origin(origins="*")
+    @login.login_required_when_activated
+    def config():
+        return _config()
+
+else:
+
+    @web_interface.server_instance.route(route, methods=methods)
+    @login.login_required_when_activated
+    def config():
+        return _config()
+
+
+def _config():
     next_url = flask.request.args.get("next", None)
     request_data = flask.request.get_json()
     success = True
@@ -249,10 +284,26 @@ def config():
         return util.get_rest_reply(flask.jsonify(err_message), 500)
 
 
-@web_interface.server_instance.route('/config_tentacle', methods=['GET', 'POST'])
-@login.login_required_when_activated
-def config_tentacle():
-    if flask.request.method == 'POST':
+route = "/config_tentacle"
+methods = ["GET", "POST"]
+if cross_origin := import_cross_origin_if_enabled():
+
+    @web_interface.server_instance.route(route, methods=methods)
+    @cross_origin(origins="*")
+    @login.login_required_when_activated
+    def config_tentacle():
+        return _config_tentacle()
+
+else:
+
+    @web_interface.server_instance.route(route, methods=methods)
+    @login.login_required_when_activated
+    def config_tentacle():
+        return _config_tentacle()
+
+
+def _config_tentacle():
+    if flask.request.method == "POST":
         tentacle_name = flask.request.args.get("name")
         action = flask.request.args.get("action")
         profile_id = flask.request.args.get("profile_id")
@@ -346,10 +397,26 @@ def config_tentacle_edit_details(tentacle):
         return util.get_rest_reply(str(e), 500)
 
 
-@web_interface.server_instance.route('/config_tentacles', methods=['POST'])
-@login.login_required_when_activated
-def config_tentacles():
-    if flask.request.method == 'POST':
+route = "/config_tentacles"
+methods = ["POST"]
+if cross_origin := import_cross_origin_if_enabled():
+
+    @web_interface.server_instance.route(route, methods=methods)
+    @cross_origin(origins="*")
+    @login.login_required_when_activated
+    def config_tentacles():
+        return _config_tentacles()
+
+else:
+
+    @web_interface.server_instance.route(route, methods=methods)
+    @login.login_required_when_activated
+    def config_tentacles():
+        return _config_tentacles()
+
+
+def _config_tentacles():
+    if flask.request.method == "POST":
         action = flask.request.args.get("action")
         profile_id = flask.request.args.get("profile_id")
         tentacles_setup_config = models.get_tentacles_setup_config_from_profile_id(profile_id) if profile_id else None

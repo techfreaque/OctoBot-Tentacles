@@ -20,18 +20,31 @@ import werkzeug
 import octobot_commons.time_frame_manager as time_frame_manager
 import octobot_commons.constants as commons_constants
 import octobot_backtesting.constants as backtesting_constants
+import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2_models
 
 import tentacles.Services.Interfaces.web_interface as web_interface
+import tentacles.Services.Interfaces.web_interface.flask_util.cors as cors_util
 import tentacles.Services.Interfaces.web_interface.login as login
 import tentacles.Services.Interfaces.web_interface.models as models
 import tentacles.Services.Interfaces.web_interface.util as util
 import tentacles.Services.Interfaces.web_interface.errors as errors
 
+route = "/backtesting"
+methods = ['GET', 'POST']
+if cross_origin := octo_ui2_models.import_cross_origin_if_enabled():
+    @web_interface.server_instance.route(route, methods=methods)
+    @cross_origin(origins=cors_util.get_user_defined_cors_allowed_origins())
+    @login.login_required_when_activated
+    def backtesting():
+        return _backtesting()
+else:
+    @web_interface.server_instance.route(route, methods=methods)
+    @login.login_required_when_activated
+    def backtesting():
+        return _backtesting()
 
-@web_interface.server_instance.route("/backtesting")
-@web_interface.server_instance.route('/backtesting', methods=['GET', 'POST'])
-@login.login_required_when_activated
-def backtesting():
+
+def _backtesting():
     if not models.is_backtesting_enabled():
         return flask.redirect(flask.url_for("home"))
     if flask.request.method == 'POST':
