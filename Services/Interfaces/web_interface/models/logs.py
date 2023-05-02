@@ -13,6 +13,7 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+import os
 import shutil
 import octobot.constants as constants
 
@@ -21,5 +22,5 @@ LOG_EXPORT_FORMAT = "zip"
 
 
 def export_logs(export_path):
-    shutil.make_archive(export_path, "zip", constants.LOGS_FOLDER)
+    shutil.make_archive(os.path.abspath(export_path), "zip", constants.LOGS_FOLDER)
     return f"{export_path}.{LOG_EXPORT_FORMAT}"
