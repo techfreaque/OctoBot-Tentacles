@@ -495,12 +495,32 @@ class DisplayedElements(display.DisplayTranslator):
         )
         self.elements.append(element)
 
+    def pie_chart(
+            self,
+            values: list,
+            labels: list,
+            title: str = None,
+            text: str = None,
+            hole_size: float = None,
+    ):
+        element = display.Element(
+            kind="pie",
+            title=title,
+            text=text,
+            values=values,
+            labels=labels,
+            hole_size=hole_size,
+            type=commons_enums.DisplayedElementTypes.CHART.value,
+        )
+        self.elements.append(element)
+
     def table(
             self,
             name,
             columns,
             rows,
-            searches
+            searches,
+            config={}
     ):
         element = display.Element(
             None,
@@ -510,6 +530,7 @@ class DisplayedElements(display.DisplayTranslator):
             columns=columns,
             rows=rows,
             searches=searches,
+            config_values=config,
             type=commons_enums.DisplayedElementTypes.TABLE.value
         )
         self.elements.append(element)
