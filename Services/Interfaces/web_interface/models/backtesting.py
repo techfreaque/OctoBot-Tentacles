@@ -112,7 +112,7 @@ def start_backtesting_using_current_bot_data(data_sources, exchange_ids, source,
                               start_timestamp=start_timestamp, end_timestamp=end_timestamp, trading_type=trading_type,
                               profile_id=profile_id,
                               use_current_bot_data=use_current_bot_data,
-                              exchange_id=exchange_id, enable_logs=enable_logs,
+                              exchange_ids=exchange_ids, enable_logs=enable_logs,
                               auto_stop=auto_stop, name=name,
                               collector_start_callback=collector_start_callback,
                               start_callback=start_callback)
@@ -243,7 +243,7 @@ def _start_backtesting(files, source, reset_tentacle_config=False, run_on_common
 
 
 async def _collect_initialize_and_run_independent_backtesting(
-        data_collector_instance, independent_backtesting, config, tentacles_setup_config, files, run_on_common_part_only,
+        data_collector_instances, independent_backtesting, config, tentacles_setup_config, files, run_on_common_part_only,
         start_timestamp, end_timestamp, enable_logs, auto_stop, name, collector_start_callback, start_callback):
     logger = bot_logging.get_logger("StartIndependentBacktestingModel")
     if data_collector_instances is not None:
@@ -377,7 +377,9 @@ def get_data_collector_status():
                 all_collectors_starting = False
                 percent_by_collector.append(100)
             else:
+                all_collectors_finished = False
                 percent_by_collector.append(0)
+                
                 all_collectors_starting = all_collectors_starting
         if all_collectors_finished:
             return web_interface_enums.DataCollectorsStatus.FINISHED.value, progress
@@ -507,7 +509,7 @@ def collect_data_file(exchange, symbols, time_frames=None, start_timestamp=None,
 
 async def _start_collect_and_notify(data_collector_instance):
     success = False
-    message = "finished"
+    message = "starting"
     try:
         await backtesting_api.initialize_and_run_data_collector(data_collector_instance)
         success = True
