@@ -16,8 +16,8 @@
 
 
 def get_tagged_orders(
-    ctx, tag, symbol=None, since: int or float = -1, until: int or float = -1
+    ctx, tag, symbol=None, since: int or float = -1, until: int or float = -1, contains_tag=True
 ):
     return ctx.exchange_manager.exchange_personal_data.orders_manager.get_open_orders(
-        symbol=symbol, tag=tag, since=since, until=until
+        symbol=symbol, tag=tag, since=since, until=until, contains_tag=contains_tag,
     )
