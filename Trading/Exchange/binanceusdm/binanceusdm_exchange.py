@@ -252,7 +252,7 @@ class BinanceUsdMAdapter(exchanges.CCXTAdapter):
                 side = trading_enums.PositionSide.UNKNOWN
             unrealized_pnl = self.safe_decimal(
                 fixed,
-                ccxt_enums.ExchangePositionCCXTColumns.UNREALIZED_PNL.value,
+                ccxt_enums.ExchangePositionCCXTColumns.UNREALISED_PNL.value,
                 constants.ZERO,
             )
             liquidation_price = self.safe_decimal(
@@ -274,7 +274,7 @@ class BinanceUsdMAdapter(exchanges.CCXTAdapter):
                 trading_enums.ExchangeConstantsPositionColumns.SIZE.value: size
                 if original_side == trading_enums.PositionSide.LONG.value
                 else -size,
-                trading_enums.ExchangeConstantsPositionColumns.SINGLE_CONTRACT_VALUE.value: self.safe_decimal(
+                trading_enums.ExchangeConstantsPositionColumns.QUANTITY.value: self.safe_decimal(
                     fixed,
                     ccxt_enums.ExchangePositionCCXTColumns.CONTRACT_SIZE.value,
                     constants.ONE,
@@ -284,7 +284,7 @@ class BinanceUsdMAdapter(exchanges.CCXTAdapter):
                     ccxt_enums.ExchangePositionCCXTColumns.INITIAL_MARGIN.value,
                     constants.ZERO,
                 ),
-                trading_enums.ExchangeConstantsPositionColumns.VALUE.value: self.safe_decimal(
+                trading_enums.ExchangeConstantsPositionColumns.NOTIONAL.value: self.safe_decimal(
                     fixed,
                     ccxt_enums.ExchangePositionCCXTColumns.NOTIONAL.value,
                     constants.ZERO,
