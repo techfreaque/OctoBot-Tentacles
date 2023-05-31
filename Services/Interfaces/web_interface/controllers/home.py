@@ -21,8 +21,12 @@ import tentacles.Services.Interfaces.web_interface.login as login
 import tentacles.Services.Interfaces.web_interface.models as models
 import tentacles.Services.Interfaces.web_interface.flask_util as flask_util
 import octobot.constants as constants
+import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2
 
 
+def new_home():
+    return flask.redirect("/octo_ui2/home")
+@web_interface.server_instance.route("/home")
 def register(blueprint):
     @blueprint.route("/")
     @blueprint.route("/home")
