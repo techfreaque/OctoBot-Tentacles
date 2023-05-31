@@ -23,9 +23,21 @@ import tentacles.Services.Interfaces.web_interface.login as login
 import tentacles.Services.Interfaces.web_interface.models as models
 import tentacles.Services.Interfaces.web_interface.flask_util as flask_util
 import octobot.constants as constants
+import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2
 
 
-@web_interface.server_instance.route("/")
+def new_home():
+    return flask.redirect("/octo_ui2/home")
+
+
+octo_ui2.create_env_dependent_route(
+    plugin=web_interface.server_instance,
+    route="/",
+    route_method=new_home,
+    can_be_shared=True,
+)
+
+
 @web_interface.server_instance.route("/home")
 @login.login_required_when_activated
 def home():
