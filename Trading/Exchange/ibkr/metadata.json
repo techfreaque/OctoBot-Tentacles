@@ -1,0 +1,8 @@
+{
+  "version": "0.0.1",
+  "origin_package": "Matrix-Tentacles",
+  "tentacles": [
+    "ibkr"
+  ],
+  "tentacles-requirements": []
+}
