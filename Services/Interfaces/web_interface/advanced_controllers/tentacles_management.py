@@ -20,11 +20,11 @@ import tentacles.Services.Interfaces.web_interface.util as util
 import tentacles.Services.Interfaces.web_interface.models as models
 import octobot_commons.authentication as authentication
 import octobot.constants as constants
+import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2_models
 
 
 def register(blueprint):
-    @blueprint.route("/tentacles")
-    @login.active_login_required
+    @octo_ui2_models.octane_route(blueprint, route="/tentacles")
     def tentacles():
         return flask.render_template("advanced_tentacles.html",
                                      tentacles=models.get_tentacles())
@@ -111,9 +111,12 @@ def register(blueprint):
             return util.get_rest_reply(f'Impossible to install tentacles, check the logs for more information.', 500)
     
     
-    @blueprint.route("/tentacle_packages")
-    @blueprint.route('/tentacle_packages', methods=['GET', 'POST'])
-    @login.active_login_required
+    @octo_ui2_models.octane_route(
+        blueprint,
+        route="/tentacle_packages", 
+        methods=['GET', 'POST'],
+        login_always_required=True
+        )
     def tentacle_packages():
         if flask.request.method == 'POST':
             if not constants.CAN_INSTALL_TENTACLES:

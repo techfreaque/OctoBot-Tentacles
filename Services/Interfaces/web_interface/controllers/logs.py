@@ -20,14 +20,14 @@ import octobot_commons.constants as commons_constants
 import octobot_commons.logging as logging
 import octobot_tentacles_manager.constants as tentacles_manager_constants
 import tentacles.Services.Interfaces.web_interface as web_interface
-import tentacles.Services.Interfaces.web_interface.login as login
 import tentacles.Services.Interfaces.web_interface.models as models
 import tentacles.Services.Interfaces.web_interface.flask_util as flask_util
+import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2_models
+
 
 
 def register(blueprint):
-    @blueprint.route("/logs")
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/logs")
     def logs():
         web_interface.flush_errors_count()
         return flask.render_template("logs.html",
@@ -35,8 +35,7 @@ def register(blueprint):
                                      notifications=web_interface.get_notifications_history())
     
     
-    @blueprint.route("/export_logs")
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/export_logs")
     def export_logs():
         # use user folder as the bot always has the right to use it, on failure, try in tentacles folder
         for candidate_path in (commons_constants.USER_FOLDER, tentacles_manager_constants.TENTACLES_PATH):
