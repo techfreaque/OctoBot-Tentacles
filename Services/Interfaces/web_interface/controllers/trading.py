@@ -55,8 +55,14 @@ def register(blueprint):
 
 
     @octo_ui2_models.octane_route(blueprint, route="/symbol_market_status", can_be_shared_public=True)
-    @octo_ui2_models.octane_route(blueprint, route="/symbol_market_status", methods=["POST"])
     def symbol_market_status():
+        return _symbol_market_status()
+        
+    @octo_ui2_models.octane_route(blueprint, route="/symbol_market_status", methods=["POST"])
+    def symbol_market_status_post():
+        return _symbol_market_status()
+        
+    def _symbol_market_status():
         exchange_id = flask.request.args["exchange_id"]
         symbol = flask.request.args["symbol"]
         symbol_time_frames, exchange = models.get_exchange_watched_time_frames(exchange_id)
