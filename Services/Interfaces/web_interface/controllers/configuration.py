@@ -13,6 +13,7 @@
 #
 #  You should have received a copy of the GNU Lesser General Public
 #  License along with this library.
+import json
 import flask
 import werkzeug
 import os
@@ -416,6 +417,49 @@ def register(blueprint):
         return util.get_rest_reply(flask.jsonify(models.activate_metrics(flask.request.get_json())))
 
 
+def _config_tentacles():
+    if flask.request.method == "POST":
+        action = flask.request.args.get("action")
+        profile_id = flask.request.args.get("profile_id")
+        keep_existing = flask.request.args.get("keep_existing", True)
+        if isinstance(keep_existing, str):
+            keep_existing = json.loads(keep_existing)
+        tentacles_setup_config = (
+            models.get_tentacles_setup_config_from_profile_id(profile_id)
+            if profile_id
+            else None
+        )
+        success = True
+        response = ""
+        if action == "update":
+            request_data = flask.request.get_json()
+            responses = []
+            for tentacle, tentacle_config in request_data.items():
+                update_success, update_response = models.update_tentacle_config(
+                    tentacle,
+                    tentacle_config,
+                    tentacles_setup_config=tentacles_setup_config,
+                    keep_existing=keep_existing,
+                )
+                success = update_success and success
+                responses.append(update_response)
+            response = ", ".join(responses)
+        if success and flask.request.args.get("reload"):
+            try:
+                models.reload_activated_tentacles_config()
+            except Exception as e:
+                success = False
+                response = str(e)
+        elif success and flask.request.args.get("reload_scripts"):
+            try:
+                models.reload_scripts()
+            except Exception as e:
+                success = False
+                response = str(e)
+        if success:
+            return util.get_rest_reply(flask.jsonify(response))
+        else:
+            return util.get_rest_reply(response, 500)
     @blueprint.route('/beta_env_settings', methods=['POST'])
     @login.login_required_when_activated
     def beta_env_settings():

@@ -510,7 +510,7 @@ def get_tentacles_activation_desc_by_group(media_url, missing_tentacles: set):
             if len(tentacles) > 1}
 
 
-def update_tentacle_config(tentacle_name, config_update, tentacle_class=None, tentacles_setup_config=None):
+def update_tentacle_config(tentacle_name, config_update, tentacle_class=None, tentacles_setup_config=None, keep_existing=False):
     try:
         tentacle_class = tentacle_class or get_tentacle_from_string(tentacle_name, None, with_info=False)[0]
         if tentacle_class is None:
@@ -518,7 +518,8 @@ def update_tentacle_config(tentacle_name, config_update, tentacle_class=None, te
         tentacles_manager_api.update_tentacle_config(
             tentacles_setup_config or interfaces_util.get_edited_tentacles_config(),
             tentacle_class,
-            config_update
+            config_update,
+            keep_existing=keep_existing
         )
         return True, f"{tentacle_name} updated"
     except Exception as e:
