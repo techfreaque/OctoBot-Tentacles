@@ -18,9 +18,6 @@ import flask
 import werkzeug
 import os
 from datetime import datetime
-from tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 import (
-    import_cross_origin_if_enabled,
-)
 
 import octobot_commons.constants as commons_constants
 import octobot_commons.logging as commons_logging
@@ -35,11 +32,12 @@ import tentacles.Services.Interfaces.web_interface.flask_util as flask_util
 import octobot_backtesting.api as backtesting_api
 import octobot_trading.api as trading_api
 import octobot_services.interfaces.util as interfaces_util
+import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2_models
+
 
 
 def register(blueprint):
-    @blueprint.route('/profile')
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/profile", can_be_shared_public=True)
     def profile():
         selected_profile = flask.request.args.get("select", None)
         next_url = flask.request.args.get("next", None)
@@ -107,8 +105,7 @@ def register(blueprint):
         )
 
 
-    @blueprint.route('/profiles_management/<action>', methods=["POST", "GET"])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/profiles_management/<action>", methods=["POST", "GET"])
     def profiles_management(action):
         if action == "update":
             data = flask.request.get_json()
@@ -186,8 +183,7 @@ def register(blueprint):
             return flask_util.send_and_remove_file(file_path, f"{name}_{datetime.now().strftime('%Y%m%d-%H%M%S')}.zip")
 
 
-    @blueprint.route('/accounts')
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/accounts")
     def accounts():
         display_config = interfaces_util.get_edited_config()
 
@@ -212,8 +208,7 @@ def register(blueprint):
                                      )
 
 
-    @blueprint.route('/config', methods=['POST'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/config", methods=['POST'])
     def config():
         next_url = flask.request.args.get("next", None)
         request_data = flask.request.get_json()
@@ -280,8 +275,7 @@ def register(blueprint):
             return util.get_rest_reply(flask.jsonify(err_message), 500)
 
 
-    @blueprint.route('/config_tentacle', methods=['GET', 'POST'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/config_tentacle", methods=['GET', 'POST'])
     def config_tentacle():
         if flask.request.method == 'POST':
             tentacle_name = flask.request.args.get("name")
@@ -367,8 +361,7 @@ def register(blueprint):
                 return flask.render_template('config_tentacle.html')
 
 
-    @blueprint.route('/config_tentacle_edit_details/<tentacle>')
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/config_tentacle_edit_details/<tentacle>", can_be_shared_public=True)
     def config_tentacle_edit_details(tentacle):
         try:
             profile_id = flask.request.args.get("profile", None)
@@ -380,13 +373,15 @@ def register(blueprint):
             return util.get_rest_reply(str(e), 500)
 
 
-    @blueprint.route('/config_tentacles', methods=['POST'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/config_tentacles", methods=['POST'])
     def config_tentacles():
         if flask.request.method == 'POST':
             action = flask.request.args.get("action")
             profile_id = flask.request.args.get("profile_id")
             tentacles_setup_config = models.get_tentacles_setup_config_from_profile_id(profile_id) if profile_id else None
+            keep_existing = flask.request.args.get("keep_existing", True)
+            if isinstance(keep_existing, str):
+                keep_existing = json.loads(keep_existing)
             success = True
             response = ""
             if action == "update":
@@ -394,12 +389,18 @@ def register(blueprint):
                 responses = []
                 for tentacle, tentacle_config in request_data.items():
                     update_success, update_response = models.update_tentacle_config(
-                        tentacle, tentacle_config, tentacles_setup_config=tentacles_setup_config
+                        tentacle, tentacle_config, tentacles_setup_config=tentacles_setup_config, keep_existing=keep_existing,
                     )
                     success = update_success and success
                     responses.append(update_response)
                 response = ", ".join(responses)
             if success and flask.request.args.get("reload"):
+                try:
+                    models.reload_activated_tentacles_config()
+                except Exception as e:
+                    success = False
+                    response = str(e)
+            if success and flask.request.args.get("reload_scripts"):
                 try:
                     models.reload_activated_tentacles_config()
                 except Exception as e:
@@ -417,57 +418,13 @@ def register(blueprint):
         return util.get_rest_reply(flask.jsonify(models.activate_metrics(flask.request.get_json())))
 
 
-def _config_tentacles():
-    if flask.request.method == "POST":
-        action = flask.request.args.get("action")
-        profile_id = flask.request.args.get("profile_id")
-        keep_existing = flask.request.args.get("keep_existing", True)
-        if isinstance(keep_existing, str):
-            keep_existing = json.loads(keep_existing)
-        tentacles_setup_config = (
-            models.get_tentacles_setup_config_from_profile_id(profile_id)
-            if profile_id
-            else None
-        )
-        success = True
-        response = ""
-        if action == "update":
-            request_data = flask.request.get_json()
-            responses = []
-            for tentacle, tentacle_config in request_data.items():
-                update_success, update_response = models.update_tentacle_config(
-                    tentacle,
-                    tentacle_config,
-                    tentacles_setup_config=tentacles_setup_config,
-                    keep_existing=keep_existing,
-                )
-                success = update_success and success
-                responses.append(update_response)
-            response = ", ".join(responses)
-        if success and flask.request.args.get("reload"):
-            try:
-                models.reload_activated_tentacles_config()
-            except Exception as e:
-                success = False
-                response = str(e)
-        elif success and flask.request.args.get("reload_scripts"):
-            try:
-                models.reload_scripts()
-            except Exception as e:
-                success = False
-                response = str(e)
-        if success:
-            return util.get_rest_reply(flask.jsonify(response))
-        else:
-            return util.get_rest_reply(response, 500)
     @blueprint.route('/beta_env_settings', methods=['POST'])
     @login.login_required_when_activated
     def beta_env_settings():
         return util.get_rest_reply(flask.jsonify(models.activate_beta_env(flask.request.get_json())))
 
 
-    @blueprint.route('/config_actions', methods=['POST'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/config_actions", methods=['POST'])
     def config_actions():
         # action = flask.request.args.get("action")
         return util.get_rest_reply("No specified action.", code=500)

@@ -21,17 +21,17 @@ import octobot_services.interfaces.util as interfaces_util
 import tentacles.Services.Interfaces.web_interface.login as login
 import tentacles.Services.Interfaces.web_interface.models as models
 import tentacles.Services.Interfaces.web_interface.util as util
+import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2_models
+
 
 
 def register(blueprint):
-    @blueprint.route('/get_config_currency', methods=["GET"])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/get_config_currency", can_be_shared_public=True)
     def get_config_currency():
         return flask.jsonify(models.format_config_symbols(interfaces_util.get_edited_config()))
 
 
-    @blueprint.route('/get_all_currencies<exchange>', methods=["GET"])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/get_all_currencies<exchange>", can_be_shared_public=True)
     def get_all_currencies(exchange):
         return flask.jsonify(models.get_all_currencies([exchange]))
 
@@ -94,8 +94,7 @@ def register(blueprint):
             return util.get_rest_reply(f"Unexpected error : {e}", 500)
 
 
-    @blueprint.route('/trading_strategies_tentacles_details<backtestable_only>', methods=["GET"])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/trading_strategies_tentacles_details<backtestable_only>", can_be_shared_public=True)
     def trading_strategies_tentacles_details(backtestable_only):
         missing_tentacles = set()
         media_url = flask.url_for("tentacle_media", _external=True)
