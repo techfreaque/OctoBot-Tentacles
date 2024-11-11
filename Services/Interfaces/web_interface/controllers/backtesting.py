@@ -17,6 +17,7 @@ import flask
 import werkzeug
 
 import octobot_commons.time_frame_manager as time_frame_manager
+import octobot_backtesting.constants as backtesting_constants
 
 import tentacles.Services.Interfaces.web_interface as web_interface
 import tentacles.Services.Interfaces.web_interface.models as models
@@ -58,15 +59,18 @@ def register(blueprint):
                     source = flask.request.args["source"]
                     auto_stop = flask.request.args.get("auto_stop", False)
                     exchange_id = data.get("exchange_id", None)
+                    exchange_ids = data.get("exchange_ids", None)
+                    data_sources = data.get("data_sources", None)
+                    data_source = data.get("data_source", backtesting_constants.CONFIG_CURRENT_BOT_DATA)
                     trading_type = data.get("exchange_type", None)
                     profile_id = data.get("profile_id", None)
                     name = data.get("name", None)
                     reset_tentacle_config = flask.request.args.get("reset_tentacle_config", False)
                     success, reply = models.start_backtesting_using_current_bot_data(
-                        data.get("data_source", models.CURRENT_BOT_DATA),
-                        exchange_id,
-                        source,
-                        reset_tentacle_config,
+                        data_sources=data_sources or [data_source],
+                        exchange_ids=exchange_ids or [exchange_id],
+                        source=source,
+                        reset_tentacle_config=reset_tentacle_config,
                         start_timestamp=data.get("start_timestamp", None),
                         end_timestamp=data.get("end_timestamp", None),
                         trading_type=trading_type,
