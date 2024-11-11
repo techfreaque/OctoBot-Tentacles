@@ -17,6 +17,9 @@ import flask
 import werkzeug
 import os
 from datetime import datetime
+from tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 import (
+    import_cross_origin_if_enabled,
+)
 
 import octobot_commons.constants as commons_constants
 import octobot_commons.logging as commons_logging

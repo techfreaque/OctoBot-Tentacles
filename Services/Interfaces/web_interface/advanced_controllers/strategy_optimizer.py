@@ -18,6 +18,7 @@ import flask
 import tentacles.Services.Interfaces.web_interface.util as util
 import tentacles.Services.Interfaces.web_interface.models as models
 import tentacles.Services.Interfaces.web_interface.login as login
+import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2_models
 
 
 def register(blueprint):
