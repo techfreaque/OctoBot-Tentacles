@@ -5,11 +5,11 @@ import time
 import typing
 import numpy
 import yfinance
-from octobot_commons import timestamp_util
 
 import octobot_commons.enums as commons_enums
 from octobot_commons.symbols.symbol import Symbol
 from octobot_commons.symbols.symbol_util import parse_symbol
+from .yfinance_symbols_list import symbols
 
 
 class YFinanceTimeFrames(enum.Enum):
@@ -36,48 +36,9 @@ SECONDS_PER_DAY = 60 * 60 * 24
 
 class YFinanceClient:
     name: str = "yahoofinance"
-    symbols: set = {
-        "TSLA/USDT",
-        "INTC/USDT",
-        "AAPL/USDT",
-        "AMZN/USDT",
-        "AMD/USDT",
-        "QQQ/USDT",
-        "DISH/USDT",
-        "F/USDT",
-        "NVDA/USDT",
-        "T/USDT",
-        "PFE/USDT",
-        "SIRI/USDT",
-        "GOOG/USDT",
-        "PANW/USDT",
-        "GPK/USDT",
-        "BAC/USDT",
-        "CCL/USDT",
-        "MSFT/USDT",
-        "WBD/USDT",
-        "GOOGL/USDT",
-        "MAC/USDT",
-        "OVV/USDT",
-        "XOM/USDT",
-        "META/USDT",
-        "GFI/USDT",
-        "CSCO/USDT",
-        "LUMN/USDT",
-        "DEI/USDT",
-        "WFC/USDT",
-        "BTG/USDT",
-        "VZ/USDT",
-        "CMCSA/USDT",
-        "FULT/USDT",
-        "MU/USDT",
-        "IMGN/USDT",
-        "KGC/USDT",
-        "SWN/USDT",
-        "PLUG/USDT",
-        "USB/USDT",
-        "CSX/USDT",
-    }
+    id: str = "yahoofinance"
+
+    symbols: set = symbols
     _TIMEFRAME_MAP = {
         commons_enums.TimeFrames.ONE_MINUTE.value: YFinanceTimeFrames.ONE_MINUTE.value,
         # commons_enums.TimeFrames.THREE_MINUTES.value: YFinanceTimeFrames.THREE_MINUTES.value,
@@ -186,20 +147,29 @@ class YFinanceClient:
         start = start_datetime.strftime("%Y-%m-%d")
         end_datetime = start_datetime + datetime.timedelta(days=history_length)
         end = end_datetime.strftime("%Y-%m-%d")
-        downloaded_data = yfinance.download(
-            tickers=parsed_symbol.base,  # list of tickers
-            start=start,
-            end=end,
-            interval=self.convert_timeframe_to_yfinance_timeframe(time_frame),
-            prepost=False,  # download pre/post market hours data?
-            repair=False,  # repair obvious price errors e.g. 100x?
-            progress=False,
-            ignore_tz=True,
-        )
-        errors = yfinance.shared._ERRORS.get(parsed_symbol.base)
+        errors = None
+        downloaded_data = None
+        try:
+            downloaded_data = yfinance.download(
+                tickers=parsed_symbol.base,  # list of tickers
+                start=start,
+                end=end,
+                interval=self.convert_timeframe_to_yfinance_timeframe(time_frame),
+                prepost=False,  # download pre/post market hours data?
+                repair=False,  # repair obvious price errors e.g. 100x?
+                progress=False,
+                ignore_tz=True,
+            )
+            errors = yfinance.shared._ERRORS.get(parsed_symbol.base)
+        except Exception as error:
+            errors = [error]
         if errors is not None:
             test = 1
-        timestamps = get_unixtime(numpy.array(downloaded_data.index))
+        timestamps = (
+            get_unixtime(numpy.array(downloaded_data.index))
+            if downloaded_data is not None
+            else []
+        )
         if not len(timestamps):
             end_time_stamp = end_datetime.timestamp()
             if c_time > end_time_stamp:
