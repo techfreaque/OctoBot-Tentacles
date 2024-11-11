@@ -28,8 +28,14 @@ def _send_file(base_dir, file_path):
 
 def register(blueprint):
     @octo_ui2_models.octane_route(blueprint, route="/tentacle_media", can_be_shared_public=True)
+    def tentacle_media():
+        return _tentacle_media()
+        
     @octo_ui2_models.octane_route(blueprint, route="/tentacle_media/<path:path>", can_be_shared_public=True)
-    def tentacle_media(path=None):
+    def tentacle_media_with_path(path=None):
+        return _tentacle_media(path=path)
+        
+    def _tentacle_media(path=None):
         # images
         if models.is_valid_tentacle_image_path(path):
             # reference point is the web interface directory: use OctoBot root folder as a reference
