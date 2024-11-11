@@ -34,3 +34,11 @@ class ColorModes(enum.Enum):
     LIGHT = "light"
     DARK = "dark"
     DEFAULT = "light"
+
+
+class DataCollectorsStatus(enum.Enum):
+    FINISHED= "finished"
+    STARTING= "starting"
+    COLLECTING= "collecting"
+    NOT_STARTED = "not started"
+    
