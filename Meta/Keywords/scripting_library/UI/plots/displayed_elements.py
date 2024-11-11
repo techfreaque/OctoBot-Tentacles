@@ -22,6 +22,8 @@ import octobot_commons.constants as commons_constants
 import octobot_commons.databases as databases
 import octobot_commons.display as display
 import octobot_backtesting.api as backtesting_api
+import octobot_trading.enums as trading_enums
+import octobot_trading.storage as storage
 import octobot_trading.api as trading_api
 
 
@@ -45,6 +47,13 @@ class DisplayedElements(display.DisplayTranslator):
             inputs = []
             candles = []
             cached_values = []
+            run_db = meta_db.get_run_db()
+            try:
+                metadata = (await run_db.all(commons_enums.DBTables.METADATA.value))[0]
+            except IndexError as error:
+                raise commons_errors.DatabaseNotFoundError(
+                    "Meta database not found"
+                    ) from error
             if trading_mode.is_backtestable():
                 exchange_name, symbol, time_frame = \
                     await self._adapt_inputs_for_backtesting_results(meta_db, exchange_name, symbol, time_frame)
@@ -93,7 +102,7 @@ class DisplayedElements(display.DisplayTranslator):
                             # some table have no chart
                             pass
             try:
-                run_start_time, run_end_time = await self._get_run_window(meta_db.get_run_db())
+                run_start_time, run_end_time = await self._get_run_window(metadata)
             except IndexError:
                 run_start_time = run_end_time = 0
             first_candle_time, last_candle_time = \
@@ -107,7 +116,8 @@ class DisplayedElements(display.DisplayTranslator):
                                element_type=commons_enums.DisplayedElementTypes.INPUT.value) as part:
                     self.add_user_inputs(inputs, part)
 
-    async def _adapt_inputs_for_backtesting_results(self, meta_db, exchange_name, symbol, time_frame):
+    async def _adapt_inputs_for_backtesting_results(
+        self, meta_db, metadata, exchange_name, symbol, time_frame):
         if not await meta_db.run_dbs_identifier.exchange_base_identifier_exists(exchange_name):
             single_exchange = await meta_db.run_dbs_identifier.get_single_existing_exchange()
             if single_exchange is None:
@@ -278,8 +288,7 @@ class DisplayedElements(display.DisplayTranslator):
         ]
         return self._adapt_for_display(table_name, filtered_elements)
 
-    async def _get_run_window(self, run_database):
-        run_metadata = (await run_database.all(commons_enums.DBTables.METADATA.value))[0]
+    async def _get_run_window(self, run_metadata):
         end_time = run_metadata.get("end_time", 0)
         if end_time == -1:
             # live mode
