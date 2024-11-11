@@ -18,6 +18,8 @@ import flask
 import tentacles.Services.Interfaces.web_interface.login as login
 import tentacles.Services.Interfaces.web_interface.models as models
 import tentacles.Services.Interfaces.web_interface.util as util
+import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2_models
+
 
 
 def register(blueprint):
@@ -28,8 +30,7 @@ def register(blueprint):
         return flask.jsonify(models.are_compatible_accounts(request_data))
 
 
-    @blueprint.route("/first_exchange_details")
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/first_exchange_details", can_be_shared_public=True)
     def first_exchange_details():
         exchange_name = flask.request.args.get('exchange_name', None)
         try:

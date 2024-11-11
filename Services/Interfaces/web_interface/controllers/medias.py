@@ -15,10 +15,10 @@
 #  License along with this library.
 import flask
 import os
-from tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 import import_cross_origin_if_enabled
 
-import tentacles.Services.Interfaces.web_interface.login as login
 import tentacles.Services.Interfaces.web_interface.models as models
+import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2_models
+
 
 
 def _send_file(base_dir, file_path):
@@ -27,9 +27,8 @@ def _send_file(base_dir, file_path):
 
 
 def register(blueprint):
-    @blueprint.route('/tentacle_media')
-    @blueprint.route('/tentacle_media/<path:path>')
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/tentacle_media", can_be_shared_public=True)
+    @octo_ui2_models.octane_route(blueprint, route="/tentacle_media/<path:path>", can_be_shared_public=True)
     def tentacle_media(path=None):
         # images
         if models.is_valid_tentacle_image_path(path):
@@ -37,8 +36,7 @@ def register(blueprint):
             return _send_file("../../../..", path)
     
     
-    @blueprint.route('/profile_media/<path:path>')
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/profile_media/<path:path>", can_be_shared_public=True)
     def profile_media(path):
         # images
         if models.is_valid_profile_image_path(path):
@@ -46,22 +44,19 @@ def register(blueprint):
             return _send_file("../../../..", path)
     
     
-    @blueprint.route('/exchange_logo/<name>')
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/exchange_logo/<name>", can_be_shared_public=True)
     def exchange_logo(name):
         return flask.jsonify(models.get_exchange_logo(name))
     
     
-    @blueprint.route('/audio_media/<name>')
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/audio_media/<name>", can_be_shared_public=True)
     def audio_media(name):
         if models.is_valid_audio_path(name):
             # reference point is the web interface directory: use OctoBot root folder as a reference
             return _send_file("static/audio", name)
     
     
-    @blueprint.route('/currency_logos', methods=['POST'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/currency_logos", methods=['POST'], can_be_shared_public=True)
     def cryptocurrency_logos():
         request_data = flask.request.get_json()
         return flask.jsonify(models.get_currency_logo_urls(request_data["currency_ids"]))

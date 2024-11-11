@@ -18,23 +18,23 @@ import flask
 
 import octobot_commons.authentication as authentication
 import octobot_services.interfaces.util as interfaces_util
-import tentacles.Services.Interfaces.web_interface.login as login
 import tentacles.Services.Interfaces.web_interface.models as models
 import tentacles.Services.Interfaces.web_interface.flask_util as flask_util
 import tentacles.Services.Interfaces.web_interface.constants as web_constants
 import octobot.constants as constants
-import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2
+import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2_models
 import octobot_commons.constants
 import octobot_commons.enums
 
 
-def new_home():
-    return flask.redirect("/octo_ui2/home")
-@web_interface.server_instance.route("/home")
+
 def register(blueprint):
-    @blueprint.route("/")
-    @blueprint.route("/home")
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/", can_be_shared_public=True)
+    def new_home():
+        return flask.redirect("/octo_ui2/home")
+
+
+    @octo_ui2_models.octane_route(blueprint, route="/home", can_be_shared_public=True)
     def home():
         if flask.request.args.get("reset_tutorials", "False") == "True":
             flask_util.BrowsingDataProvider.instance().set_first_displays(True)

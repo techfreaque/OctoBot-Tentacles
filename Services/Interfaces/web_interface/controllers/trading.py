@@ -21,11 +21,12 @@ import octobot_commons.constants as commons_constants
 import tentacles.Services.Interfaces.web_interface.login as login
 import tentacles.Services.Interfaces.web_interface.models as models
 import octobot_trading.api as trading_api
+import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2_models
+
 
 
 def register(blueprint):
-    @blueprint.route("/portfolio")
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/portfolio", can_be_shared_public=True)
     def portfolio():
         has_real_trader, has_simulated_trader = interfaces_util.has_real_and_or_simulated_traders()
 
@@ -53,9 +54,8 @@ def register(blueprint):
                                      )
 
 
-    @blueprint.route("/symbol_market_status")
-    @blueprint.route('/symbol_market_status', methods=['GET', 'POST'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/symbol_market_status", can_be_shared_public=True)
+    @octo_ui2_models.octane_route(blueprint, route="/symbol_market_status", methods=["POST"])
     def symbol_market_status():
         exchange_id = flask.request.args["exchange_id"]
         symbol = flask.request.args["symbol"]
@@ -72,8 +72,7 @@ def register(blueprint):
                                      backtesting_mode=models.get_in_backtesting_mode())
 
 
-    @blueprint.route("/trading")
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/trading", can_be_shared_public=True)
     def trading():
         displayed_portfolio = models.get_exchange_holdings_per_symbol()
         has_real_trader, has_simulated_trader = interfaces_util.has_real_and_or_simulated_traders()

@@ -17,13 +17,13 @@ import flask
 
 import octobot_services.interfaces.util as interfaces_util
 import tentacles.Services.Interfaces.web_interface.util as util
-import tentacles.Services.Interfaces.web_interface.login as login
 import tentacles.Services.Interfaces.web_interface.models as models
+import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2_models
 
 
 def register(blueprint):
-    @blueprint.route("/orders", methods=['GET', 'POST'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/orders", can_be_shared_public=True)
+    @octo_ui2_models.octane_route(blueprint, route="/orders", methods=['POST'])
     def orders():
         if flask.request.method == 'GET':
             return flask.jsonify(models.get_all_orders_data())
@@ -42,14 +42,13 @@ def register(blueprint):
             return flask.jsonify(result)
 
 
-    @blueprint.route("/trades", methods=['GET'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/trades", can_be_shared_public=True)
     def trades():
         return flask.jsonify(models.get_all_trades_data())
 
 
-    @blueprint.route("/positions", methods=['GET', 'POST'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/positions", can_be_shared_public=True)
+    @octo_ui2_models.octane_route(blueprint, route="/positions", methods=['POST'])
     def positions():
         if flask.request.method == 'GET':
             return flask.jsonify(models.get_all_positions_data())
@@ -65,8 +64,7 @@ def register(blueprint):
             return flask.jsonify(result)
 
 
-    @blueprint.route("/refresh_portfolio", methods=['POST'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/refresh_portfolio", methods=['POST'])
     def refresh_portfolio():
         try:
             interfaces_util.trigger_portfolios_refresh()
@@ -75,14 +73,12 @@ def register(blueprint):
             return util.get_rest_reply("No portfolio to refresh", 500)
 
 
-    @blueprint.route("/currency_list", methods=['GET'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/currency_list", can_be_shared_public=True)
     def currency_list():
         return flask.jsonify(models.get_all_symbols_list())
 
 
-    @blueprint.route("/historical_portfolio_value", methods=['GET'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/historical_portfolio_value", can_be_shared_public=True)
     def historical_portfolio_value():
         currency = flask.request.args.get("currency", "USDT")
         time_frame = flask.request.args.get("time_frame")
@@ -97,8 +93,7 @@ def register(blueprint):
             return util.get_rest_reply("No exchange portfolio", 404)
 
 
-    @blueprint.route("/pnl_history", methods=['GET'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/pnl_history", can_be_shared_public=True)
     def pnl_history():
         exchange = flask.request.args.get("exchange")
         symbol = flask.request.args.get("symbol")
@@ -116,25 +111,21 @@ def register(blueprint):
         )
 
 
-    @blueprint.route("/clear_orders_history", methods=['POST'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/clear_orders_history", methods=['POST'])
     def clear_orders_history():
         return util.get_rest_reply(models.clear_exchanges_orders_history())
 
 
-    @blueprint.route("/clear_trades_history", methods=['POST'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/clear_trades_history", methods=['POST'])
     def clear_trades_history():
         return util.get_rest_reply(models.clear_exchanges_trades_history())
 
 
-    @blueprint.route("/clear_portfolio_history", methods=['POST'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/clear_portfolio_history", methods=['POST'])
     def clear_portfolio_history():
         return flask.jsonify(models.clear_exchanges_portfolio_history())
 
 
-    @blueprint.route("/clear_transactions_history", methods=['POST'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/clear_transactions_history", methods=['POST'])
     def clear_transactions_history():
         return flask.jsonify(models.clear_exchanges_transactions_history())

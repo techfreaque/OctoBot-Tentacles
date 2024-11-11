@@ -20,6 +20,7 @@ import octobot.constants as constants
 import octobot.disclaimer as disclaimer
 import tentacles.Services.Interfaces.web_interface.login as login
 import tentacles.Services.Interfaces.web_interface.models as models
+import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2_models
 
 logger = bot_logging.get_logger("ServerInstance Controller")
 
@@ -34,9 +35,7 @@ def register(blueprint):
                                      metrics_enabled=models.get_metrics_enabled(),
                                      disclaimer=disclaimer.DISCLAIMER)
 
-
-    @blueprint.route('/commands/<cmd>', methods=['GET', 'POST'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/commands/<cmd>", methods=['GET', 'POST'])
     def commands(cmd=None):
         if cmd == "restart":
             models.schedule_delayed_command(models.restart_bot, delay=0.1)

@@ -17,17 +17,11 @@ import flask
 
 import tentacles.Services.Interfaces.web_interface.util as util
 import tentacles.Services.Interfaces.web_interface.models as models
-import tentacles.Services.Interfaces.web_interface.login as login
 import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2_models
 
 
 def register(blueprint):
-    # strategy optimize is disabled
-    return
-
-    @blueprint.route("/strategy-optimizer")
-    @blueprint.route('/strategy-optimizer', methods=['GET', 'POST'])
-    @login.login_required_when_activated
+    @octo_ui2_models.octane_route(blueprint, route="/strategy-optimizer", methods=['GET', 'POST'])
     def strategy_optimizer():
         if not models.is_backtesting_enabled():
             return flask.redirect(flask.url_for("home"))
