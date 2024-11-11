@@ -454,6 +454,10 @@ class BybitCCXTAdapter(exchanges.CCXTAdapter):
                 trading_enums.ExchangeConstantsPositionColumns.MARGIN_TYPE.value: margin_type,
                 trading_enums.ExchangeConstantsPositionColumns.SIZE.value:
                     size if original_side == trading_enums.PositionSide.LONG.value else -size,
+                trading_enums.ExchangeConstantsPositionColumns.QUANTITY.value:
+                    self.safe_decimal(
+                        fixed, ccxt_enums.ExchangePositionCCXTColumns.CONTRACT_SIZE.value, constants.ONE
+                    ),
                 trading_enums.ExchangeConstantsPositionColumns.INITIAL_MARGIN.value:
                     self.safe_decimal(
                         fixed, ccxt_enums.ExchangePositionCCXTColumns.INITIAL_MARGIN.value,
