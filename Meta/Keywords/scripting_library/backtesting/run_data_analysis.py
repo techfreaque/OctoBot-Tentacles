@@ -32,7 +32,7 @@ import octobot_commons.time_frame_manager as time_frame_manager
 import octobot_commons.logging
 
 
-def get_logger():
+def get_run_analysis_logger():
     return octobot_commons.logging.get_logger("BacktestingRunData")
 
 
@@ -416,7 +416,7 @@ def _read_pnl_from_trades(x_data, pnl_data, cumulative_pnl_data, trades_history,
                 else:
                     x_data.append(trade[commons_enums.PlotAttributes.X.value])
         else:
-            get_logger().error(f"Unknown trade side: {trade}")
+            get_run_analysis_logger().error(f"Unknown trade side: {trade}")
 
 
 def _read_pnl_from_transactions(x_data, pnl_data, cumulative_pnl_data, trading_transactions_history, x_as_trade_count):
@@ -506,7 +506,7 @@ async def total_paid_fees(meta_database, all_trades):
             if fees_currency is None:
                 fees_currency = transaction["currency"]
             if transaction["currency"] != fees_currency:
-                get_logger().error(f"Unknown funding fee value: {transaction}")
+                get_run_analysis_logger().error(f"Unknown funding fee value: {transaction}")
             else:
                 # - because funding fees are stored as negative number when paid (positive when "gained")
                 paid_fees -= transaction["quantity"]
@@ -538,7 +538,7 @@ async def plot_historical_pnl_value(meta_database, plotted_element, exchange=Non
 def _plot_table_data(data, plotted_element, data_name, additional_key_to_label, additional_columns,
                      datum_columns_callback):
     if not data:
-        get_logger().debug(f"Nothing to create a table from when reading {data_name}")
+        get_run_analysis_logger().debug(f"Nothing to create a table from when reading {data_name}")
         return
     column_render = _get_default_column_render()
     types = _get_default_types()
@@ -704,12 +704,12 @@ async def plot_table(meta_database, plotted_element, data_source, columns=None, 
                         for cache_element in cache
                     ]
                 except KeyError as e:
-                    get_logger().warning(f"Missing cache values when plotting data: {e}")
+                    get_run_analysis_logger().warning(f"Missing cache values when plotting data: {e}")
                 except commons_errors.DatabaseNotFoundError as e:
-                    get_logger().warning(f"Missing cache values when plotting data: {e}")
+                    get_run_analysis_logger().warning(f"Missing cache values when plotting data: {e}")
 
     if not data:
-        get_logger().debug(f"Nothing to create a table from when reading {data_source}")
+        get_run_analysis_logger().debug(f"Nothing to create a table from when reading {data_source}")
         return
     column_render = column_render or _get_default_column_render()
     types = types or _get_default_types()
