@@ -23,8 +23,14 @@ import tentacles.Services.Interfaces.octo_ui2.models.octo_ui2 as octo_ui2_models
 
 def register(blueprint):
     @octo_ui2_models.octane_route(blueprint, route="/orders", can_be_shared_public=True)
-    @octo_ui2_models.octane_route(blueprint, route="/orders", methods=['POST'])
     def orders():
+        return _orders()
+        
+    @octo_ui2_models.octane_route(blueprint, route="/orders", methods=['POST'])
+    def edit_orders():
+        return _orders()
+    
+    def _orders():
         if flask.request.method == 'GET':
             return flask.jsonify(models.get_all_orders_data())
         elif flask.request.method == "POST":
@@ -48,8 +54,14 @@ def register(blueprint):
 
 
     @octo_ui2_models.octane_route(blueprint, route="/positions", can_be_shared_public=True)
-    @octo_ui2_models.octane_route(blueprint, route="/positions", methods=['POST'])
     def positions():
+        return _positions()
+    
+    @octo_ui2_models.octane_route(blueprint, route="/positions", methods=['POST'])
+    def edit_positions():
+        return _positions()
+        
+    def _positions():
         if flask.request.method == 'GET':
             return flask.jsonify(models.get_all_positions_data())
         elif flask.request.method == "POST":
