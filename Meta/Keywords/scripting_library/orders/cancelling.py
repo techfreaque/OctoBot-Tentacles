@@ -15,39 +15,36 @@
 #  License along with this library.
 import octobot_trading.enums as enums
 import octobot_trading.modes.script_keywords.basic_keywords as basic_keywords
-import tentacles.Meta.Keywords.scripting_library.orders.order_tags as order_tags
 
 
 async def cancel_orders(
-    ctx, which="all", symbol=None, symbols=None,
-    cancel_loaded_orders=True, since: int or float = -1,
+    ctx,
+    side: str = None,
+    tag: str = None,
+    symbol: str = None,
+    symbols: list[str] = None,
+    cancel_loaded_orders=True,
+    since: int or float = -1,
     until: int or float = -1,
+    contains_tag=True,
 ) -> bool:
     symbols = symbols or [symbol] if symbol or symbols else [ctx.symbol]
     orders = None
     orders_canceled = False
-    side = None
-    if which == "all":
-        side = None
-    elif which == "sell":
-        side = enums.TradeOrderSide.SELL
-    elif which == "buy":
-        side = enums.TradeOrderSide.BUY
-    else:  # tagged order
-        orders = order_tags.get_tagged_orders(
-            ctx, which, symbol=symbol, since=since, until=until)
-    if orders is not None:
-        for order in orders:
-            if await ctx.trader.cancel_order(order):
-                orders_canceled = True
-                if basic_keywords.is_emitting_trading_signals(ctx):
-                    ctx.get_signal_builder().add_cancelled_order(order, ctx.trader.exchange_manager)
-    else:
-        for symbol in symbols:
-            orders_canceled, orders = await ctx.trader.cancel_open_orders(
-                symbol, cancel_loaded_orders=cancel_loaded_orders,
-                side=side, since=since, until=until)
-            if basic_keywords.is_emitting_trading_signals(ctx):
-                for order in orders:
-                    ctx.get_signal_builder().add_cancelled_order(order, ctx.trader.exchange_manager)
+    side = None if not side else enums.TradeOrderSide(side)
+
+    for symbol in symbols:
+        orders_canceled, orders = await ctx.trader.cancel_open_orders(
+            symbol,
+            cancel_loaded_orders=cancel_loaded_orders,
+            side=side,
+            since=since,
+            until=until,
+            tag=tag,
+        )
+        if basic_keywords.is_emitting_trading_signals(ctx):
+            for order in orders:
+                ctx.get_signal_builder().add_cancelled_order(
+                    order, ctx.trader.exchange_manager
+                )
     return orders_canceled
