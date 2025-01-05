@@ -119,7 +119,7 @@ MERGED_CCXT_EXCHANGES = {
 REMOVED_CCXT_EXCHANGES = set().union(*(set(v) for v in MERGED_CCXT_EXCHANGES.values()))
 FULL_EXCHANGE_LIST = [
     exchange
-    for exchange in set(ccxt.async_support.exchanges + trading_constants.ADDITIONAL_EXCHANGES)
+    for exchange in set(ccxt.async_support.exchanges)
     if exchange not in REMOVED_CCXT_EXCHANGES
 ]
 AUTO_FILLED_EXCHANGES = None
@@ -719,7 +719,7 @@ def get_config_activated_strategies(tentacles_setup_config=None):
 
 
 def get_config_activated_evaluators(tentacles_setup_config=None):
-    return evaluators_api.get_activated_evaluators(
+    return evaluators_api.get_activated_evaluators_and_trading_mode(
         tentacles_setup_config or interfaces_util.get_bot_api().get_edited_tentacles_config()
     )
 
@@ -1483,12 +1483,11 @@ def _change_base(pair, new_quote_currency):
 
 
 def send_command_to_activated_tentacles(command, wait_for_processing=True):
-    trading_mode_name = get_config_activated_trading_mode().get_name()
     evaluator_names = [
         evaluator.get_name()
         for evaluator in get_config_activated_evaluators()
     ]
-    send_command_to_tentacles(command, [trading_mode_name] + evaluator_names, wait_for_processing=wait_for_processing)
+    send_command_to_tentacles(command, evaluator_names, wait_for_processing=wait_for_processing)
 
 
 def send_command_to_tentacles(command, tentacle_names: list, wait_for_processing=True):

@@ -117,7 +117,7 @@ class DisplayedElements(display.DisplayTranslator):
                     self.add_user_inputs(inputs, part)
 
     async def _adapt_inputs_for_backtesting_results(
-        self, meta_db, metadata, exchange_name, symbol, time_frame):
+        self, meta_db, exchange_name, symbol, time_frame):
         if not await meta_db.run_dbs_identifier.exchange_base_identifier_exists(exchange_name):
             single_exchange = await meta_db.run_dbs_identifier.get_single_existing_exchange()
             if single_exchange is None:
